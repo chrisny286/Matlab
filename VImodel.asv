@@ -37,14 +37,32 @@ if M==0
 end
 
 %%
-% Model a*exp(b*x)
+% Model I=a*exp(c*V)-b*exp(-d*V)
 %
-
+% param(i) 1: a 2: b 3: c 4: d
 if M==1
+    
+    a=param(1);
+    b=param(2);
+    c=param(3);
+    d=param(4);
+    
     for i=1:n
-        
+        out(i)=a.*exp(c.*in(i))-b.*exp(-d.*in(i));
     end
 
 end
 
 % q*1e-17*exp(11.6045)*exp(x*a/(n*4.142))*(1-exp(-x*a/4.142))
+%%
+% Model U(I)=I_s1*I_s2*sinh(c*I)/(I_s1*exp(c*I)+I_s2*exp(-c*I))
+%
+% param(i) 1: I_s1 2: I_s2: 3: c
+if M==2
+    
+    a=param(1);
+    b=param(2);
+    c=param(3);
+    
+    for i=1:n
+        out(i)=a.*b.*sinh(c.*x)./(a.*exp(c.*x)+b.*exp(-c.*x))
