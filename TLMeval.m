@@ -20,7 +20,6 @@ L=[30:30:180];
 legendL=[];
 for i=1:length(sheet)
     [Ii,Vi] =importfile(file,char(sheet(i)));
-%     [Ii,Vi] =importfile(file,sheet(i));
     I=[I,Ii];
     V=[V,Vi];
 end
@@ -28,16 +27,16 @@ end
 
 %% plot data
 
-fig1=figure('DefaultAxesFontSize',12);
+fig1=figure('Name', 'Raw Data', 'DefaultAxesFontSize',12);
 plot(V , I,'LineWidth',2);
 grid on
 
 legend(strcat(string(L),'µm'),'Location','southeast');
 
 %% Fits for R
-close all;
+% close all;
 R=zeros(length(sheet),1);
-figure( 'Name', 'Linear Fit', 'Units', 'normalized', 'OuterPosition', [ 0 0 1 1] );
+fig2= figure( 'Name', 'Linear Fit', 'Units', 'normalized', 'OuterPosition', [ 0 0 1 1] );
 x_label= 'U (V)';
 y_label= 'I (A)';
 
@@ -79,7 +78,7 @@ end
 
 %% plot and fit results R vs distance 
 
-fig2=figure('DefaultAxesFontSize',12);
+fig3=figure('Name', 'process fit results', 'DefaultAxesFontSize',12);
 x_label = 'd (\mum)'
 y_label = 'R (\Omega)'
 l=[30e-4:30e-4:180e-4];
@@ -92,7 +91,7 @@ for i=1:length(l)
     R_drude(i)=drude_resistance(l(i),w,t,mu,n);
 end
 plot(L,[R,R_drude],'LineWidth',2);
-legend( h, 'data', 'drude model', 'Zero Line', 'Location', 'NorthEast' );
+legend( 'data', 'drude model', 'Zero Line', 'Location', 'NorthEast' );
 xlabel(x_label);
 ylabel(y_label);
 
@@ -114,13 +113,14 @@ ylabel(y_label);
      R_spec=specific_contact_resistance(R_y, l, w);
     
      % Create a figure for the plots.
-     fig=figure( 'Name', 'Linear Fit' );
+     fig4=figure( 'Name', 'Linear Fit' );
     
      % Plot fit with data.
      subplot( 2, 1, 1 );
      h = plot( fitresult, xData, yData );
-     legend( h, 'R vs. d', char(strcat('R_y = ',string(R_y),'\Omega a=',string(1e3*fitresult.p1),'\Omega/cm')), 'Location', 'SouthEast', 'Interpreter', 'LaTeX');
-     % Label axes
+     % Label axes, title
+     title(char(strcat('data')));
+     legend( h, 'R vs. d', char(strcat('R_y = ',string(R_y),'\Omega a=',string(1e3*fitresult.p1),'\Omega/cm')), 'Location', 'SouthEast');
      xlabel(x_label)
      ylabel(y_label)
      grid on
@@ -128,8 +128,9 @@ ylabel(y_label);
      % Plot residuals.
      subplot( 2, 1, 2 );
      h = plot( fitresult, xData, yData, 'residuals' );
+     % Label axes, title
+     title(char(strcat('Results')));
      legend( h, 'Linear Fit - residuals', 'Zero Line', 'Location', 'SouthEast' );
-     % Label axes
      xlabel(x_label)
      ylabel(y_label)
      grid on
