@@ -17,7 +17,7 @@ sample_name='M12-0170-3';
 I=[];
 V=[];
 L=[30:30:180];
-legendL=[];
+%legendL=[];
 for i=1:length(sheet)
     [Ii,Vi] =importfile(file,char(sheet(i)));
     I=[I,Ii];
@@ -121,8 +121,8 @@ ylabel(y_label);
      % Label axes, title
      title(char(strcat('data')));
      legend( h, 'R vs. d', char(strcat('R_y = ',string(R_y),'\Omega a=',string(1e3*fitresult.p1),'\Omega/cm')), 'Location', 'SouthEast');
-     xlabel(x_label)
-     ylabel(y_label)
+     x_label='U (V)';
+     y_label='I (A)';
      grid on
     
      % Plot residuals.
@@ -131,8 +131,8 @@ ylabel(y_label);
      % Label axes, title
      title(char(strcat('Results')));
      legend( h, 'Linear Fit - residuals', 'Zero Line', 'Location', 'SouthEast' );
-     xlabel(x_label)
-     ylabel(y_label)
+     xlabel= x_label
+     ylabel=y_label
      grid on
      
      print(char(strcat('TLM_Drude_comparison')),'-dpng','-r300');
