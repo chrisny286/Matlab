@@ -48,7 +48,7 @@ for i=1:length(sheet)
             legendx1=[legendx1,char(strcat(string(x1(i)),{' '},x1_unit,', ',string(x2(i)),x2_unit))];
         elseif strcmp(structure, 'TLM')
             legendx1=[legendx1,char(strcat(string(x1(i)),{' '},x1_unit))];
-        disp(char(strcat('sheet',{' '},string(i),{' '},' imported =)')));
+        disp(char(strcat('sheet ',string(i),' imported =)')));
         end
 end
 
@@ -133,58 +133,58 @@ end
     print(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_Areas','.png')),'-dpng','-r300')
     movefile(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_Areas','.png')),'fits');
 
-% plot A,U dependency 
-%close all;
-
-fig2=figure('DefaultAxesFontSize',12,'Units','normalized','OuterPosition',[0 0.4 0.7 0.6]);
-title('Resistance vs. circumference and area');
-subplot( 1, 2, 1 );
-plot(U,1./R,'LineWidth',2);
-% Label axes, title
-title('Conductivity vs. Circumference');
-xlabel('U (mm)');
-ylabel('G (\Omega^{-1})');
-
-subplot( 1, 2, 2 );
-% Label axes, title
-plot(x1,1./R,'LineWidth',2);
-title('Conductivity vs. Area');
-xlabel('A (mm^2)');
-ylabel('G (\Omega^{-1})');
-
-print(char(strcat('R_vs_A_and_U')),'-dpng','-r300');
-movefile(char(strcat('R_vs_A_and_U','.png')),'fits');
-
-%% compare with drude 
-%close all;
-
-l=0.02;
-w=[0.01,0.015,0.02,0.03,0.04,0.05];
-t=0.0001;
-mu=200;
-n=1e19;
-
-R_drude=zeros(length(w),1);
-for i=1:length(w)
-    R_drude(i)=drude_resistance(l,w(i),t,mu,n);
-end
-
-fig3=figure('DefaultAxesFontSize',12,'Units','normalized','OuterPosition',[0 0.4 0.7 0.6]);
-
-subplot( 1, 2, 2 );
-plot(U,1./R,U,1./R_drude,'LineWidth',2);
-% Label axes, title
-xlabel(x_label)
-ylabel(y_label)
-xlabel('U (mm)');
-ylabel('G (\Omega^{-1})');
-
-subplot( 1, 2, 1 );
-plot(x1,1./R,x1,1./R_drude,'LineWidth',2);
-% Label axes, title
-xlabel('A (mm^2)');
-ylabel('G (\Omega^{-1})');
-grid on
-
-print(char(strcat('Areas_Drude_comparison')),'-dpng','-r300');
-movefile(char(strcat('Areas_Drude_comparison','.png')),'fits');
+% % plot A,U dependency 
+% %close all;
+% 
+% fig2=figure('DefaultAxesFontSize',12,'Units','normalized','OuterPosition',[0 0.4 0.7 0.6]);
+% title('Resistance vs. circumference and area');
+% subplot( 1, 2, 1 );
+% plot(U,1./R,'LineWidth',2);
+% % Label axes, title
+% title('Conductivity vs. Circumference');
+% xlabel('U (mm)');
+% ylabel('G (\Omega^{-1})');
+% 
+% subplot( 1, 2, 2 );
+% % Label axes, title
+% plot(x1,1./R,'LineWidth',2);
+% title('Conductivity vs. Area');
+% xlabel('A (mm^2)');
+% ylabel('G (\Omega^{-1})');
+% 
+% print(char(strcat('R_vs_A_and_U')),'-dpng','-r300');
+% movefile(char(strcat('R_vs_A_and_U','.png')),'fits');
+% 
+% %% compare with drude 
+% %close all;
+% 
+% l=0.02;
+% w=[0.01,0.015,0.02,0.03,0.04,0.05];
+% t=0.0001;
+% mu=200;
+% n=1e19;
+% 
+% R_drude=zeros(length(w),1);
+% for i=1:length(w)
+%     R_drude(i)=drude_resistance(l,w(i),t,mu,n);
+% end
+% 
+% fig3=figure('DefaultAxesFontSize',12,'Units','normalized','OuterPosition',[0 0.4 0.7 0.6]);
+% 
+% subplot( 1, 2, 2 );
+% plot(U,1./R,U,1./R_drude,'LineWidth',2);
+% % Label axes, title
+% xlabel(x_label)
+% ylabel(y_label)
+% xlabel('U (mm)');
+% ylabel('G (\Omega^{-1})');
+% 
+% subplot( 1, 2, 1 );
+% plot(x1,1./R,x1,1./R_drude,'LineWidth',2);
+% % Label axes, title
+% xlabel('A (mm^2)');
+% ylabel('G (\Omega^{-1})');
+% grid on
+% 
+% print(char(strcat('Areas_Drude_comparison')),'-dpng','-r300');
+% movefile(char(strcat('Areas_Drude_comparison','.png')),'fits');

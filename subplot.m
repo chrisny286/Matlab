@@ -1,6 +1,6 @@
 % helper function to identify the data type
 % true if 'TLM', elif: 'Areas', else: skip
-function [] = add_subplot(m, n, 1, title, figlure_label, legend_options, x_fit_range, labels)
+function [] = add_subplot(m, n, i, title, figlure_label, legend_options, x_fit_range, labels)
     subplot( m, n, i)     
     h = plot( fitresult, xData, yData, figlure_label );
 	title(char(title));
