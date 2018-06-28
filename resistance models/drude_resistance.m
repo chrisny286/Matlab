@@ -8,5 +8,5 @@
 
 function [R_drude] = drude_resistance(l, w, t, mu, n)
     e = 1.6022e-19;  % C 
-    R_drude = l./(n*e*w*t*mu)
+    R_drude = l./(n*e*w*t*mu);
 end
