@@ -4,9 +4,9 @@ id='curvefit:prepareFittingData:removingNaNAndInf';
 warning('off',id);
 
 %% locations
-%addpath(genpath('C:\Users\Kamphausen\sciebo\ZnSe\Matlab script'))
-%addpath(genpath('C:\Users\Kamphausen\sciebo\ZnSe\Matlab script\resistance models'))
-addpath(genpath('C:\Users\hartz\Documents\MATLAB'))
+addpath(genpath('C:\Users\Kamphausen\sciebo\ZnSe\Matlab script'))
+addpath(genpath('C:\Users\Kamphausen\sciebo\ZnSe\Matlab script\resistance models'))
+%addpath(genpath('C:\Users\hartz\Documents\MATLAB'))
 
 file='2018-06-21_M12-170-3_TLM_30...180_um.xls';
 sample_name='M12-0170-3';

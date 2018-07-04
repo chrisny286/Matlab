@@ -10,8 +10,6 @@ addpath(genpath('C:\Users\Kamphausen\sciebo\ZnSe\Matlab script\resistance models
 filestruct=dir('*.xls');
 file={filestruct.name};
 sheet=sheetin;
-% sheet={'Data' , 'Append1' , 'Append2' , 'Append3' , 'Append4' ,
-% 'Append5'}; for debugging
 
 fontsize=24;
 C = regexp(char(file), '_', 'split');
@@ -149,7 +147,7 @@ print(char(strcat('Drude_comparison')),'-dpng','-r300');
 movefile(char(strcat('Drude_comparison','.png')),'fits');
 
 %% Fit exponential model to data curves
-Xmax=2;
+
 Xmin=-1*Xmax;
 IS1=zeros(length(sheet),1);
 IS2=zeros(length(sheet),1);
@@ -165,21 +163,21 @@ for i=1:length(sheet)
     outliers = excludedata(xData,yData,'domain',[Xmin Xmax]);
     
     % Set up fittype and options.
-    ft =fittype(@(Is1,Is2,E,in) VImodel(in,2,[Is1,Is2,E]),'independent',{'in'},'coefficients',{'Is1','Is2','E'});
-    opts = fitoptions( 'Method', 'NonlinearLeastSquares','Exclude',outliers );
+    ft =fittype(@(Is1,Is2,E,in) VImodel(in,M,[Is1,Is2,E]),'independent',{'in'},'coefficients',{'Is1','Is2','E'});
+    opts = fitoptions( 'Method', 'LinearLeastSquares','Exclude',outliers );
     opts.Robust = 'Bisquare';
     
     % Fit model to data.
     [fitresult, gof] = fit( xData, yData, ft, opts );
     results{i}=fitresult;
-    IS1=fitresult.Is1
-    IS2=fitresult.Is2
-    E=fitresult.E
+    IS1=fitresult.Is1;
+    IS2=fitresult.Is2;
+    E
     
      % Plot fit with data.
      subplot( 4, 3, i );
      h = plot( fitresult, xData, yData );
-     title(char(strcat('Diode Fit Area',{' '},string(i),'(',string(A(i)),'\mum)')));
+     title(char(strcat('Lin. Fit Area',{' '},string(i),'(',string(A(i)),'\mum)')));
      axis([Xmin-0.1*abs(Xmin) Xmax+0.1*abs(Xmax) -1 1])
      axis 'auto y'
      legend( h, 'I vs. U', char(strcat('TODO')), 'Location', 'SouthEast' );

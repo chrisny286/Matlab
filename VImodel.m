@@ -55,7 +55,7 @@ end
 
 % q*1e-17*exp(11.6045)*exp(x*a/(n*4.142))*(1-exp(-x*a/4.142))
 %%
-% Model U(I)=I_s1*I_s2*sinh(c*I)/(I_s1*exp(c*I)+I_s2*exp(-c*I))
+% Model I(U)=I_s1*I_s2*sinh(c*I)/(I_s1*exp(c*I)+I_s2*exp(-c*I))
 %
 % param(i) 1: I_s1 2: I_s2: 3: c
 if M==2
