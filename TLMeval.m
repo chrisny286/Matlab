@@ -1,5 +1,9 @@
 
+<<<<<<< HEAD
 function [SMU1I,VDIFF] = TLMeval(sheetin,xmax,Xmax)
+=======
+function [SMU1I,VDIFF] = TLMeval(sheetin,xmax)
+>>>>>>> develop
 % misc and cleaning 
 id='curvefit:prepareFittingData:removingNaNAndInf';
 warning('off',id);
@@ -12,8 +16,11 @@ addpath(genpath('C:\Users\Kamphausen\sciebo\ZnSe\Matlab script\resistance models
 filestruct=dir('*.xls');
 file={filestruct.name};
 sheet=sheetin;
+<<<<<<< HEAD
 % sheet={'Data' , 'Append1' , 'Append2' , 'Append3' , 'Append4' , 'Append5'}; 
 % for debugging
+=======
+>>>>>>> develop
 
 fontsize=24;
 C = regexp(char(file), '_', 'split');
@@ -37,7 +44,11 @@ end
 fig1=figure('Name', 'Raw Data', 'DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
 plot(V , I,'LineWidth',2);
 grid on
+<<<<<<< HEAD
 title('Raw data');
+=======
+
+>>>>>>> develop
 legend(strcat(string(L),'µm'),'Location','southeast');
 
 bool=exist('fits');
@@ -81,7 +92,11 @@ for i=1:length(sheet)
      subplot( 4, 3, i );
      h = plot( fitresult, xData, yData );
      % Label axes, title
+<<<<<<< HEAD
      title(char(strcat('Lin. Fit',{' '}, string(i*30),' \mu', 'm')));
+=======
+     title(char(strcat('data',{' '}, string(i*30),' \mu', 'm')));
+>>>>>>> develop
      set(h,'LineWidth',2);
      axis([xmin-0.1*abs(xmin) xmax+0.1*abs(xmax) -1 1])
      axis 'auto y'
@@ -153,7 +168,11 @@ grid on
      
 print(char(strcat('TLM_R_vs_L')),'-dpng','-r300');
 movefile(char(strcat('TLM_R_vs_L','.png')),'fits');
+<<<<<<< HEAD
 %% compare with drude 
+=======
+
+>>>>>>> develop
 fig4=figure('Name', 'process fit results', 'DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
 x_label = 'd (\mum)';
 y_label = 'R (\Omega)';
@@ -167,7 +186,10 @@ for i=1:length(l)
     R_drude(i)=drude_resistance(l(i),w,t,mu,n)+R_y;
 end
 plot(L,[R,R_drude],'LineWidth',2);
+<<<<<<< HEAD
 title('Comparison with drude model');
+=======
+>>>>>>> develop
 legend( 'data', 'drude model+R_{contact}', 'Location', 'NorthEast' );
 xlabel(x_label);
 ylabel(y_label);
@@ -175,6 +197,7 @@ ylabel(y_label);
 print(char(strcat('TLM_Drude_comparison')),'-dpng','-r300');
 movefile(char(strcat('TLM_Drude_comparison','.png')),'fits');
 
+<<<<<<< HEAD
 %% Fit exponential model to data curves
 Xmin=-1*Xmax;
 In0=zeros(length(sheet),1);
@@ -280,4 +303,6 @@ fig.PaperPositionMode = 'auto';
 print(char(strcat('diodefit_results','.png')),'-dpng','-r300')
 movefile(char(strcat('diodefit_results','.png')),'fits');
 
+=======
+>>>>>>> develop
 end

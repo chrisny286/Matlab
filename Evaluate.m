@@ -21,9 +21,13 @@ addRequired(p, 'format', ...
 %add optional vars
 addParameter(p,'Sheets',{'Data' , 'Append1' , 'Append2' , 'Append3' , 'Append4' , 'Append5'}, ...
             @(z) format=='*.xls' && iscellstr(z)            );
+<<<<<<< HEAD
 addParameter(p,'fitrangelin',inf, ...
             @(z) isnumeric(z)                               );
 addParameter(p,'fitrangeexp',inf, ...
+=======
+addParameter(p,'fitrangelin',1, ...
+>>>>>>> develop
             @(z) isnumeric(z)                               );
         
 %parse inputs
@@ -32,9 +36,15 @@ parse(p, structure, format, varargin{:})
 %run evaluation in current folder
         if strcmp(p.Results.format, '*.xls')
            if strcmp(p.Results.structure, 'Area')
+<<<<<<< HEAD
                xls_square_eval(p.Results.Sheets,p.Results.fitrangelin,p.Results.fitrangeexp);
            else
                TLMeval(p.Results.Sheets,p.Results.fitrangelin,p.Results.fitrangeexp);
+=======
+               xls_square_eval(p.Results.Sheets,p.Results.fitrangelin);
+           else
+               TLMeval(p.Results.Sheets,p.Results.fitrangelin);
+>>>>>>> develop
            end
         else
             txteval();
