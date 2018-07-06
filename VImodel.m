@@ -6,7 +6,7 @@ function [ out ] = VImodel(in,M,param)
 n=length(in);
 out=zeros(n,1);
 
-%%
+%% Modell M=0
 % Model to fit U(I) with U(I)=t1*ln(I/I1+1)+t2*ln(I/I2+1)
 % param(i) 1: t1 2: t2 3: I1 4: I2 5: R
 
@@ -36,7 +36,7 @@ if M==0
    
 end
 
-%%
+%% Modell M=1
 % Model I=a*exp(c*V)-b*exp(-d*V)
 %
 % param(i) 1: a 2: b 3: c 4: d
@@ -54,8 +54,8 @@ if M==1
 end
 
 % q*1e-17*exp(11.6045)*exp(x*a/(n*4.142))*(1-exp(-x*a/4.142))
-%%
-% Model U(I)=I_s1*I_s2*sinh(c*I)/(I_s1*exp(c*I)+I_s2*exp(-c*I))
+%% Modell M=2
+% Model I(U)=I_s1*I_s2*sinh(c*I)/(I_s1*exp(c*I)+I_s2*exp(-c*I))
 %
 % param(i) 1: I_s1 2: I_s2: 3: c
 if M==2
@@ -67,5 +67,31 @@ if M==2
     for i=1:n
         out(i)=a.*b.*sinh(c.*in(i))./(a.*exp(c.*in(i))+b.*exp(-c.*in(i)));
     end
+end
+%% Modell M=3
+% for V<0  J0n*(exp(An*x)-1)
+% for V>0 J0p*(1-exp(-Ap*x))
+% for V=0 0
+%
+% param(i) 1:J0n 2:An 3:J0p 4:Ap
+    
+if M==3
+    
+    a=param(1);
+    b=param(2);
+    c=param(3);
+    d=param(4);
+    
+    for i=1:n
+       if in(i) < 0
+           out(i)=a.*(1-exp(-b.*in(i)));
+       elseif in(i) > 0
+           out(i)=c.*(exp(d.*in(i))-1);
+       else
+           out(i)=0;
+       end
+    end
+end
     
 end
+
