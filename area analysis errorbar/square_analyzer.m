@@ -1,11 +1,9 @@
-function [SMU1I,VDIFF] = xls_square_eval(sheetin,xmax,Xmax)
+function [SMU1I,VDIFF] = square_analyzer(sheetin,xmax,Xmax)
 id='curvefit:prepareFittingData:removingNaNAndInf';
 warning('off',id);
 
 %% locations
 addpath(genpath('C:\Users\Kamphausen\sciebo\ZnSe\Matlab script\resistance models'))
-%addpath(genpath('C:\Users\hartz\Documents\MATLAB'))
-%addpath(genpath('C:\Users\hartz\Documents\MATLAB'))
 
 filestruct=dir('*.xls');
 file={filestruct.name};
@@ -15,21 +13,11 @@ sheet=sheetin;
 
 fontsize=24;
 C = regexp(char(file), '_', 'split');
-sample_name=char(C{2});
+sample_name=char(C{1});
 
 %% data import
-I=[];
-V=[];
-U=[0.4 , 0.6 , 0.8 , 1.2, 1.6, 2.0];
-A=[0.01,0.0225,0.04,0.09,0.16,0.25];
-legendL={};
-for i=1:length(sheet)
-    [Ii,Vi] =importfile(char(file),char(sheet(i)));
-    I=[I,Ii];
-    V=[V,Vi];
-    legendL=[legendL,char(strcat(string(U(i)),'mm',', ',string(A(i)),'mm²'))];
-end
-
+% import all data, including alternative x-axes like A and U
+[I, V, legendL, A, U] = data_import(sheet, file);
 
 %% plot data
 bool=exist('fits');
@@ -46,133 +34,53 @@ legend(legendL,'Location','southeast');
 
 print(char(strcat('Overview','.png')),'-dpng','-r300')
 movefile(char(strcat('Overview','.png')),'fits');
-
 %% Fits for R
-
+% to be plotted with fit_errorbar_plot
 xmin=-1*xmax;
 param1_fit_rev=zeros(length(sheet),1);
 
-figure( 'Name', 'Linear Fit','Units','normalized','OuterPosition',[0 0 1 1]);
+% figure( 'Name', 'Linear Fit','Units','normalized','OuterPosition',[0 0 1 1]);
 dparam1_local=[0 0; 0 0; 0 0; 0 0; 0 0; 0 0];
-for i=1:length(sheet)
-    % Fit: 'Linear Fit'.
-    [xData, yData] = prepareCurveData( V(:,i), I(:,i) );
-    
-    %define interval to be fitted 
-    %outliers = excludedata(xdata,ydata,MethodName,MethodValue)
-    outliers = excludedata(xData,yData,'domain',[xmin xmax]);
-    
-    % Set up fittype and options.
-    ft = fittype( 'poly1' );
-    opts = fitoptions( 'Method', 'LinearLeastSquares','Exclude',outliers );
-    opts.Robust = 'Bisquare';
-    
-    % Fit model to data.
-    [fitresult, gof] = fit( xData, yData, ft, opts );
-    % coeffs = coeffvalues(fitresult);
-    ci= confint(fitresult);
-    param1=fitresult.p1;
-    ci_param1(i)=ci(1);
-    results{i}=fitresult;
-    param1_fit_rev(i)=1/param1;
-    % dR(i)=fitresult.p1;
-    
-    % calculate errors manually using the 95% coinfidence interval
-    dparam1_lower =-(param1-ci(1,1))/param1^2;
-    dparam1_upper =-(param1-ci(2,1))/param1^2;
-    dparam1=[dparam1_lower, dparam1_upper];
-    
-    ci_param1 = -1*param1/param1^2;
-    dparam1_local(i, :) = abs(dparam1);
-    % ci_param1_local = ci_param1;
-    
-    
-     % Plot fit with data.
-     subplot( 4, 3, i );
-     h = plot( fitresult, xData, yData );
-     title(char(strcat('Lin. Fit Area',{' '},string(i),'(',string(A(i)),'\mum)')));
-     axis([xmin-0.1*abs(xmin) xmax+0.1*abs(xmax) -1 1])
-     axis 'auto y'
-     legend( h, 'I vs. U', char(strcat('R=',string(param1_fit_rev(i)),'\Omega')), 'Location', 'SouthEast' );
-     % Label axes
-     xlabel 'U (V)'
-     ylabel 'I (A)'
-     grid on
-    
-     % Plot residuals.
-     subplot( 4, 3, i+6 );
-     h = plot( fitresult, xData, yData, 'residuals' );
-     title(char(strcat('Residuals Area',{' '},string(i),'(',string(A(i)),'\mum)')));
-     axis([xmin-0.1*abs(xmin) xmax+0.1*abs(xmax) -1 1])
-     axis 'auto y'
-     legend( h, 'Linear Fit - residuals', 'Zero Line', 'Location', 'SouthEast' );
-     % Label axes
-     xlabel 'U (V)'
-     ylabel 'I (A)'
-     grid on
-     
-end
-    %save plot
-     fig.PaperPositionMode = 'auto';
-     print(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_Areas','.png')),'-dpng','-r300')
-     movefile(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_Areas','.png')),'fits');
 
-%% plot A,U dependency 
+% the following section runs nicely
+% fit_options={'poly1', '';
+%     'method', 'LinearLeastSquares';
+%     'exclude', ' '};
+% data_legend = 'ToDo: legend';
+% my_title = 'linear fit analysis';
+% x_label = 'U (V)';
+% fit_model_errorbar_plot(V,I,A,U,xmax,fit_options, 'legend', legend, 'title', my_title);%  'x_label', x_label
 
-fig2=figure('DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
-title('Resistance vs. circumference and area');
-subplot( 1, 2, 1 );
-% plot(U,1./R,'LineWidth',2);
-errorbar(U, param1_fit_rev, dparam1_local(:,1), dparam1_local(:,2)); 
-title('Resistance vs. Circumference');
-xlabel('circumference (mm)');
-ylabel('R (\Omega)');
-
-subplot( 1, 2, 2 );
-plot(A,1./param1_fit_rev,'LineWidth',2);
-title('Conductivity vs. Area');
-xlabel('A (mm^2)');
-ylabel('G (\Omega^{-1})');
-
-print(char(strcat('R_vs_A_and_U')),'-dpng','-r300');
-movefile(char(strcat('R_vs_A_and_U','.png')),'fits');
-
-%% compare with drude 
-
-l=0.02;
-w=[0.01,0.015,0.02,0.03,0.04,0.05];
-t=0.0001;
-mu=200;
-n=1e19;
-
-R_drude=zeros(length(w),1);
-for i=1:length(w)
-    R_drude(i)=drude_resistance(l,w(i),t,mu,n);
-end
-
-fig3=figure('DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
-
-subplot( 1, 2, 2 );
-plot(U,1./param1_fit_rev,U,1./R_drude,'LineWidth',2);
-xlabel('U (mm)');
-ylabel('G (\Omega^{-1})');
-
-subplot( 1, 2, 1 );
-plot(A,1./param1_fit_rev,A,1./R_drude,'LineWidth',2);
-xlabel('A (mm^2)');
-ylabel('G (\Omega^{-1})');
-
-print(char(strcat('Drude_comparison')),'-dpng','-r300');
-movefile(char(strcat('Drude_comparison','.png')),'fits');
+fit_options={'poly1', '';
+    'method', 'LinearLeastSquares';
+    'exclude', ' '};
+data_legend = 'ToDo: legend';
+my_title = 'linear fit analysis';
+x_label = 'U (V)';
+model = 'diode model';
+fit_model_errorbar_plot(V,I,A,U,xmax,fit_options, 'legend', legendL, 'title', my_title);% 'fit_model', model);
+% @ Christian-16.7.2018: continue code from here
+%save plot
+%  fig.PaperPositionMode = 'auto';
+%  print(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_Areas','.png')),'-dpng','-r300')
+%  movefile(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_Areas','.png')),'fits');
+%  disp('linear fit analysis completed.');
+%  disp('data saved.');
+% 
+% print(char(strcat('R_vs_A_and_U')),'-dpng','-r300');
+% movefile(char(strcat('R_vs_A_and_U','.png')),'fits');
 
 %% Fit exponential model to data curves
+% to be plotted with fit_errorbar_plot
 Xmin=-1*Xmax;
 In0=zeros(length(sheet),1);
 A_n=zeros(length(sheet),1);
 Ip0=zeros(length(sheet),1);
 A_p=zeros(length(sheet),1);
 
-fig4=figure( 'Name', 'Diode Fit','Units','normalized','OuterPosition',[0 0 1 1]);
+modelname= 'Diode Fit';
+
+fig4=figure( 'Name', modelname ,'Units','normalized','OuterPosition',[0 0 1 1]);
 for i=1:length(sheet)
     % Fit: 'Linear Fit'.
     [xData, yData] = prepareCurveData( V(:,i), I(:,i) );
@@ -200,7 +108,7 @@ for i=1:length(sheet)
      title(char(strcat('Diode Fit Area',{' '},string(i),'(',string(A(i)),'\mum)')));
      axis([Xmin-0.1*abs(Xmin) Xmax+0.1*abs(Xmax) -1 1])
      axis 'auto y'
-     legend( h, 'I vs. U', char(strcat('TODO')), 'Location', 'SouthEast' );
+     legend( h, 'I vs. U', char(strcat(modelname)), 'Location', 'SouthEast' );
      % Label axes
      xlabel 'U (V)'
      ylabel 'I (A)'

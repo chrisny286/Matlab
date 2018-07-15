@@ -4,9 +4,9 @@
     % thickness of ZnSe:Cl
     % all length units in cm
     % dimensions: length, width, thickness (l, w, t)
-% returns Ohm
+% returns Ohm*cm
 
 function [R_drude] = drude_resistance(l, w, t, mu, n)
-    e = 1.6022e-19;  % C 
-    R_drude = l./(n*e*w*t*mu);
+    e = 1.6022e-19  % C 
+    R_drude = l/(n*e*w*t*mu)
 end

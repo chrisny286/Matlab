@@ -1,11 +1,10 @@
-
-function [SMU1I,VDIFF] = TLMeval(sheetin,xmax,Xmax)
-% misc and cleaning 
+function [SMU1I,VDIFF] = xls_square_eval(sheetin,xmax,Xmax)
 id='curvefit:prepareFittingData:removingNaNAndInf';
 warning('off',id);
 
 %% locations
 addpath(genpath('C:\Users\Kamphausen\sciebo\ZnSe\Matlab script\resistance models'))
+%addpath(genpath('C:\Users\hartz\Documents\MATLAB'))
 %addpath(genpath('C:\Users\hartz\Documents\MATLAB'))
 
 filestruct=dir('*.xls');
@@ -16,47 +15,45 @@ sheet=sheetin;
 
 fontsize=24;
 C = regexp(char(file), '_', 'split');
-sample_name=char(C{2});
-sheet=[1:6];
+
 
 %% data import
 I=[];
 V=[];
-L=[30:30:180];
-%legendL=[];
+U=[0.4 , 0.6 , 0.8 , 1.2, 1.6, 2.0];
+A=[0.01,0.0225,0.04,0.09,0.16,0.25];
+legendL={};
 for i=1:length(sheet)
     [Ii,Vi] =importfile(char(file),char(sheet(i)));
     I=[I,Ii];
     V=[V,Vi];
+    legendL=[legendL,char(strcat(string(U(i)),'mm',', ',string(A(i)),'mm²'))];
 end
 
 
 %% plot data
-
-fig1=figure('Name', 'Raw Data', 'DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
-plot(V , I,'LineWidth',2);
-grid on
-
-legend(strcat(string(L),'µm'),'Location','southeast');
-
 bool=exist('fits');
 if bool==0&&bool~=7
     mkdir('fits');
 end
 
+fig1=figure('DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
+plot(V , I,'LineWidth',2);
+title('Raw data');
+grid on
+xlabel('U (V)');
+ylabel('I (A)');
+legend(legendL,'Location','southeast');
+
 print(char(strcat('Overview','.png')),'-dpng','-r300')
 movefile(char(strcat('Overview','.png')),'fits');
 
 %% Fits for R
-% close all;
 
 xmin=-1*xmax;
-
 R=zeros(length(sheet),1);
-fig2= figure( 'Name', 'Linear Fit', 'Units', 'normalized', 'OuterPosition', [ 0 0 1 1] );
-x_label= 'U (V)';
-y_label= 'I (A)';
 
+figure( 'Name', 'Linear Fit','Units','normalized','OuterPosition',[0 0 1 1]);
 for i=1:length(sheet)
     % Fit: 'Linear Fit'.
     [xData, yData] = prepareCurveData( V(:,i), I(:,i) );
@@ -74,104 +71,85 @@ for i=1:length(sheet)
     [fitresult, gof] = fit( xData, yData, ft, opts );
     results{i}=fitresult;
     R(i)=1/fitresult.p1;
-    % Create a figure for the plots.
     
      % Plot fit with data.
      subplot( 4, 3, i );
      h = plot( fitresult, xData, yData );
-     % Label axes, title
-     title(char(strcat('data',{' '}, string(i*30),' \mu', 'm')));
-     set(h,'LineWidth',2);
+     title(char(strcat('Lin. Fit Area',{' '},string(i),'(',string(A(i)),'\mum)')));
      axis([xmin-0.1*abs(xmin) xmax+0.1*abs(xmax) -1 1])
      axis 'auto y'
-     legend( h, 'I vs. U', char(strcat('R = ',string(R(i)),'\Omega')), 'Location', 'NorthEast' );
-     xlabel(x_label);
-     ylabel(y_label);
+     legend( h, 'I vs. U', char(strcat('R=',string(R(i)),'\Omega')), 'Location', 'SouthEast' );
+     % Label axes
+     xlabel 'U (V)'
+     ylabel 'I (A)'
      grid on
     
      % Plot residuals.
      subplot( 4, 3, i+6 );
      h = plot( fitresult, xData, yData, 'residuals' );
-     % Label axes, title
-     title(char(strcat('residuals', {' '}, string(i*30),' \mu', 'm')));
-     set(h,'LineWidth',2);
+     title(char(strcat('Residuals Area',{' '},string(i),'(',string(A(i)),'\mum)')));
      axis([xmin-0.1*abs(xmin) xmax+0.1*abs(xmax) -1 1])
      axis 'auto y'
-     legend( h, 'Linear Fit - residuals', 'Zero Line', 'Location', 'NorthEast' );
-     xlabel(x_label);
-     ylabel(y_label);
+     legend( h, 'Linear Fit - residuals', 'Zero Line', 'Location', 'SouthEast' );
+     % Label axes
+     xlabel 'U (V)'
+     ylabel 'I (A)'
      grid on
-end
-
-print(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_TLM','.png')),'-dpng','-r300')
-movefile(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_TLM','.png')),'fits');
-
-%% plot and fit results R vs distance 
-
-[xData, yData] = prepareCurveData( L, R );
-
-% Set up fittype and options.
-ft = fittype( 'poly1' );
-opts = fitoptions( 'Method', 'LinearLeastSquares' );
-opts.Robust = 'Bisquare';
-
-% Fit model to data.
-[fitresult, gof] = fit( xData, yData, ft, opts );
-results{i}=fitresult;
-R_y=fitresult.p2;
-
-
-w=190e-4;
-l=75e-4;
-R_spec=specific_contact_resistance(R_y, l, w);
-
-% Create a figure for the plots.
-fig3=figure( 'Name', 'Linear Fit' ,'DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
-
-% Plot fit with data.
-subplot( 2, 1, 1 );
-h = plot( fitresult, xData, yData );
-% Label axes, title
-title(char(strcat('data')));
-legend( h, 'R vs. d', char(strcat('R_y = ',string(R_y),'\Omega a=',string(1e3*fitresult.p1),'\Omega/cm')), 'Location', 'SouthEast');
-set(h,'LineWidth',2);
-x_label='U (V)';
-y_label='I (A)';
-grid on
-
-% Plot residuals.
-subplot( 2, 1, 2 );
-h = plot( fitresult, xData, yData, 'residuals' );
-% Label axes, title
-title(char(strcat('residuals')));
-legend( h, 'Linear Fit - residuals', 'Zero Line', 'Location', 'SouthEast' );
-set(h,'LineWidth',2);
-xlabel(x_label);
-ylabel(y_label);
-grid on
      
-print(char(strcat('TLM_R_vs_L')),'-dpng','-r300');
-movefile(char(strcat('TLM_R_vs_L','.png')),'fits');
+end
+    %save plot
+     fig.PaperPositionMode = 'auto';
+     print(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_Areas','.png')),'-dpng','-r300')
+     movefile(char(strcat('linfit_',string(xmin),'V_',string(xmax),'V_Areas','.png')),'fits');
 
-fig4=figure('Name', 'process fit results', 'DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
-x_label = 'd (\mum)';
-y_label = 'R (\Omega)';
-l=[30e-4:30e-4:180e-4];
-w=190e-4;
+%% plot A,U dependency 
+
+fig2=figure('DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
+title('Resistance vs. circumference and area');
+subplot( 1, 2, 1 );
+plot(U,1./R,'LineWidth',2);
+title('Conductivity vs. Circumference');
+xlabel('U (mm)');
+ylabel('G (\Omega^{-1})');
+
+subplot( 1, 2, 2 );
+plot(A,1./R,'LineWidth',2);
+title('Conductivity vs. Area');
+xlabel('A (mm^2)');
+ylabel('G (\Omega^{-1})');
+
+print(char(strcat('R_vs_A_and_U')),'-dpng','-r300');
+movefile(char(strcat('R_vs_A_and_U','.png')),'fits');
+
+%% compare with drude 
+
+l=0.02;
+w=[0.01,0.015,0.02,0.03,0.04,0.05];
 t=0.0001;
 mu=200;
 n=1e19;
-R_drude=zeros(length(l),1);
-for i=1:length(l)
-    R_drude(i)=drude_resistance(l(i),w,t,mu,n)+R_y;
-end
-plot(L,[R,R_drude],'LineWidth',2);
-legend( 'data', 'drude model+R_{contact}', 'Location', 'NorthEast' );
-xlabel(x_label);
-ylabel(y_label);
 
-print(char(strcat('TLM_Drude_comparison')),'-dpng','-r300');
-movefile(char(strcat('TLM_Drude_comparison','.png')),'fits');
+R_drude=zeros(length(w),1);
+for i=1:length(w)
+    R_drude(i)=drude_resistance(l,w(i),t,mu,n);
+end
+
+fig3=figure('DefaultAxesFontSize',fontsize,'Units','normalized','OuterPosition',[0 0 1 1]);
+title('Comparison with drude model');
+subplot( 1, 2, 2 );
+plot(U,1./R,U,1./R_drude,'LineWidth',2);
+legend( 'data', 'drude model', 'Location', 'NorthEast' );
+xlabel('U (mm)');
+ylabel('G (\Omega^{-1})');
+
+subplot( 1, 2, 1 );
+plot(A,1./R,A,1./R_drude,'LineWidth',2);
+legend( 'data', 'drude model', 'Location', 'NorthEast' );
+xlabel('A (mm^2)');
+ylabel('G (\Omega^{-1})');
+
+print(char(strcat('Drude_comparison')),'-dpng','-r300');
+movefile(char(strcat('Drude_comparison','.png')),'fits');
 
 %% Fit exponential model to data curves
 Xmin=-1*Xmax;
@@ -191,7 +169,7 @@ for i=1:length(sheet)
     
     % Set up fittype and options.
     ft =fittype(@(I0n,An,I0p,Ap,in) VImodel(in,3,[I0n,An,I0p,Ap]),'independent',{'in'},'coefficients',{'I0n','An','I0p','Ap'});
-    opts = fitoptions( 'Method', 'NonlinearLeastSquares','Exclude',outliers,'StartPoint', [0.02, 1.5, 0.02, 1.5] );
+    opts = fitoptions( 'Method', 'NonlinearLeastSquares','Exclude',outliers,'Robust','Bisquare','StartPoint', [0.02,1.5, 0.02, 1.5] );
     opts.Robust = 'Bisquare';
     
     % Fit model to data.
@@ -205,7 +183,7 @@ for i=1:length(sheet)
      % Plot fit with data.
      subplot( 4, 3, i );
      h = plot( fitresult, xData, yData );
-     title(char(strcat('Diode Fit TLM',{' '},string(i),'(',string(L(i)),'\mum)')));
+     title(char(strcat('Diode Fit Area',{' '},string(i),'(',string(A(i)),'\mum)')));
      axis([Xmin-0.1*abs(Xmin) Xmax+0.1*abs(Xmax) -1 1])
      axis 'auto y'
      legend( h, 'I vs. U', char(strcat('TODO')), 'Location', 'SouthEast' );
@@ -217,7 +195,7 @@ for i=1:length(sheet)
      % Plot residuals.
      subplot( 4, 3, i+6 );
      h = plot( fitresult, xData, yData, 'residuals' );
-     title(char(strcat('Residuals Area',{' '},string(i),'(',string(L(i)),'\mum)')));
+     title(char(strcat('Residuals Area',{' '},string(i),'(',string(A(i)),'\mum)')));
      axis([Xmin-0.1*abs(Xmin) Xmax+0.1*abs(Xmax) -1 1])
      axis 'auto y'
      legend( h, 'Diode Fit - residuals', 'Zero Line', 'Location', 'SouthEast' );
@@ -229,8 +207,8 @@ for i=1:length(sheet)
 end
     %save plot
      fig.PaperPositionMode = 'auto';
-     print(char(strcat('diodefit_',string(Xmin),'V_',string(Xmax),'V_TLM','.png')),'-dpng','-r300')
-     movefile(char(strcat('diodefit_',string(Xmin),'V_',string(Xmax),'V_TLM','.png')),'fits');
+     print(char(strcat('diodefit_',string(Xmin),'V_',string(Xmax),'V_Areas','.png')),'-dpng','-r300')
+     movefile(char(strcat('diodefit_',string(Xmin),'V_',string(Xmax),'V_Areas','.png')),'fits');
 
  %% Calulate Barrier and n from Fit
  
@@ -251,31 +229,50 @@ for i=1:length(sheet)
     n1(i)=A_n(i)*(k_B*T)/e;
     n2(i)=A_p(i)*(k_B*T)/e;
 end
-% plot phi and n vs d
+% plot phi and n vs U,A
 fig5=figure('DefaultAxesFontSize',18, 'Name', 'Barrier and n','Units','normalized','OuterPosition',[0 0 1 1]);
 
-      % Plot Phi data vs L.
-     subplot( 1, 2, 1 );
-     h = plot(L,Phi1,L,Phi2);
-     title(char(strcat('Barrier vs L')));
+      % Plot Phi data vs U.
+     subplot( 2, 2, 1 );
+     h = plot(U,Phi1,U,Phi2);
+     title(char(strcat('Barrier vs U')));
      legend( h, '\Phi_{negative}','\Phi_{positive}', 'Location', 'SouthEast' );
 %      Label axes
-     xlabel 'd (\mum)'
+     xlabel 'U (mm)'
      ylabel 'E (eV)'
      grid on
      
-     % Plot n data vs L.
-     subplot( 1, 2, 2 );
-     h = plot( L,n1,L,n2 );
-     title(char(strcat('n vs L')));
+     % Plot n data vs U.
+     subplot( 2, 2, 2 );
+     h = plot( U,n1,U,n2 );
+     title(char(strcat('n vs U')));
      legend( h, 'n_{negative}', 'n_{positive}', 'Location', 'SouthEast' );
 %      Label axes
-     xlabel 'd (\mum)'
+     xlabel 'U (mm)'
+     ylabel unitless
+     grid on
+     
+     % Plot Phi data vs A.
+     subplot( 2, 2, 3 );
+     h = plot(A,Phi1,A,Phi2);
+     title(char(strcat('Barrier vs A')));
+     legend( h, '\Phi_{negative}','\Phi_{positive}', 'Location', 'SouthEast' );
+%      Label axes
+     xlabel 'A (mm^2)'
+     ylabel 'E (eV)'
+     grid on
+     
+     % Plot n data vs A.
+     subplot( 2, 2, 4 );
+     h = plot( A,n1,A,n2 );
+     title(char(strcat('n vs A')));
+     legend( h, 'n_{negative}', 'n_{positive}', 'Location', 'SouthEast' );
+%      Label axes
+     xlabel 'A (mm^2)'
      ylabel unitless
      grid on
      
 fig.PaperPositionMode = 'auto';
 print(char(strcat('diodefit_results','.png')),'-dpng','-r300')
 movefile(char(strcat('diodefit_results','.png')),'fits');
-
 end

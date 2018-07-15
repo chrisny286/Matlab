@@ -86,7 +86,7 @@ if M==3
        if in(i) < 0
            out(i)=a.*(1-exp(-b.*in(i)));
        elseif in(i) > 0
-           out(i)=c.*(exp(d.*in(i))-1);
+           out(i)=c.*(exp(b.*in(i))-1);
        else
            out(i)=0;
        end

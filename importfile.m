@@ -32,7 +32,7 @@ end
 % If row start and end points are not specified, define defaults
 if nargin <= 3
     startRow = 1;
-    endRow = 1203;
+    endRow = 4100;
 end
 
 %% Import the data
